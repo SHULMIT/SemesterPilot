@@ -1,0 +1,32 @@
+:root { font-family: Arial, sans-serif; color: #202124; background: #f5f7fb; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+.container { max-width: 1050px; margin: 0 auto; padding: 28px 18px 60px; }
+header { display: flex; justify-content: space-between; align-items: center; gap: 20px; margin-bottom: 24px; }
+h1 { margin: 0 0 6px; font-size: 34px; }
+header p { margin: 0; color: #667085; }
+.badge { background: #fff; border-radius: 18px; padding: 12px 18px; box-shadow: 0 4px 16px rgba(0,0,0,.07); font-weight: 700; }
+.panel { background: #fff; border-radius: 18px; padding: 22px; margin-bottom: 20px; box-shadow: 0 6px 22px rgba(25, 40, 70, .07); }
+.panel h2 { margin-top: 0; font-size: 21px; }
+.task-grid { display: grid; gap: 12px; }
+.task { display: flex; justify-content: space-between; align-items: center; gap: 16px; border: 1px solid #e6e9ef; padding: 16px; border-radius: 14px; }
+.task.urgent { border-width: 2px; }
+.task-main { display: grid; gap: 5px; flex: 1; }
+.task-main small { color: #667085; }
+.code { color: #7a8495; font-weight: normal; }
+.done-button { width: 44px; height: 44px; border-radius: 50%; border: 0; font-size: 24px; cursor: pointer; background: #e8f5e9; }
+.done-button:hover { transform: scale(1.05); }
+.notes { display: flex; gap: 8px; margin-top: 8px; }
+input, button { font: inherit; }
+input { width: 100%; padding: 11px 12px; border: 1px solid #d7dce5; border-radius: 10px; }
+button { cursor: pointer; border: 0; border-radius: 10px; padding: 10px 14px; }
+.primary { background: #111827; color: #fff; }
+.secondary { margin-top: 12px; background: #eef2f7; }
+.stack { display: grid; gap: 10px; }
+.inline-form { display: flex; gap: 10px; margin-bottom: 8px; }
+.two-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.flash { background: #fff8db; padding: 12px 16px; border-radius: 12px; margin-bottom: 16px; }
+.empty { color: #667085; }
+.muted { opacity: .83; }
+.completed-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee; }
+@media (max-width: 760px) { .two-columns { grid-template-columns: 1fr; } header { align-items: flex-start; flex-direction: column; } .inline-form { flex-direction: column; } }

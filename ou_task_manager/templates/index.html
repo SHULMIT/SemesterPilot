@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>מנהל המטלות שלי</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main class="container">
+    <header>
+      <div>
+        <h1>מנהל המטלות שלי</h1>
+        <p>כל הקורסים, תאריכי ההגשה והסימון במקום אחד.</p>
+      </div>
+      <div class="badge">השבוע: {{ weekly|length }} מטלות</div>
+    </header>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <section class="flash">{% for message in messages %}<div>{{ message }}</div>{% endfor %}</section>
+      {% endif %}
+    {% endwith %}
+
+    <section class="panel">
+      <h2>מה צריך לעשות השבוע?</h2>
+      {% if weekly %}
+        <div class="task-grid">
+          {% for task in weekly %}
+            <article class="task urgent">
+              <div class="task-main">
+                <strong>{{ task.name }}</strong>
+                <span>מטלה {{ task.number }} · {{ task.due_display }}</span>
+                <small>{{ task.urgency }} · נשארו {{ task.days_left }} ימים</small>
+              </div>
+              <form method="post" action="{{ url_for('toggle', assignment_id=task.id) }}">
+                <button class="done-button" title="סיימתי">✓</button>
+              </form>
+            </article>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="empty">אין מטלות להגשה בשבעת הימים הקרובים.</p>
+      {% endif %}
+    </section>
+
+    <section class="panel">
+      <h2>כל המטלות הפתוחות</h2>
+      <div class="task-grid">
+        {% for task in pending %}
+          <article class="task">
+            <div class="task-main">
+              <strong>{{ task.name }} <span class="code">({{ task.code }})</span></strong>
+              <span>מטלה {{ task.number }} · {{ task.due_display }}</span>
+              <small>{{ task.urgency }}{% if task.days_left >= 0 %} · {{ task.days_left }} ימים{% endif %}</small>
+              <form class="notes" method="post" action="{{ url_for('update_notes', assignment_id=task.id) }}">
+                <input name="notes" value="{{ task.notes }}" placeholder="הערה אישית למטלה">
+                <button>שמור</button>
+              </form>
+            </div>
+            <form method="post" action="{{ url_for('toggle', assignment_id=task.id) }}">
+              <button class="done-button" title="סיימתי">✓</button>
+            </form>
+          </article>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section class="two-columns">
+      <div class="panel">
+        <h2>הוספת מטלה</h2>
+        <form class="stack" method="post" action="{{ url_for('add_manual') }}">
+          <input name="course_name" placeholder="שם הקורס" required>
+          <input name="course_code" placeholder="מספר הקורס" required>
+          <input name="number" placeholder="מספר המטלה" required>
+          <input type="date" name="due_date" required>
+          <button class="primary">הוספה</button>
+        </form>
+      </div>
+
+      <div class="panel">
+        <h2>ייבוא לוח שנה</h2>
+        <form class="stack" method="post" action="{{ url_for('import_ics') }}" enctype="multipart/form-data">
+          <input type="file" name="ics_file" accept=".ics" required>
+          <button class="primary">ייבוא קובץ ICS</button>
+        </form>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>הגדרות מייל שבועי</h2>
+      <form class="inline-form" method="post" action="{{ url_for('settings') }}">
+        <input type="email" name="email_to" value="{{ email_to }}" placeholder="כתובת המייל שלך" required>
+        <button class="primary">שמירה</button>
+      </form>
+      <form method="post" action="{{ url_for('send_test') }}">
+        <button class="secondary">שליחת מייל בדיקה עכשיו</button>
+      </form>
+      <small>שליחה אחרונה: {{ last_email_sent }}</small>
+    </section>
+
+    {% if completed %}
+      <section class="panel muted">
+        <h2>מטלות שהושלמו</h2>
+        {% for task in completed %}
+          <div class="completed-row">
+            <span>{{ task.name }} — מטלה {{ task.number }}</span>
+            <form method="post" action="{{ url_for('toggle', assignment_id=task.id) }}"><button>החזרה לפתוחות</button></form>
+          </div>
+        {% endfor %}
+      </section>
+    {% endif %}
+  </main>
+</body>
+</html>

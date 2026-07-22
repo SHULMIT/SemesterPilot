@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "semester-pilot"
+version = "0.0.0"
+description = "Local-first academic assignment manager"
+readme = "README_HE.txt"
+requires-python = ">=3.12"
+license = "MIT"
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "mypy>=1.15",
+    "pytest>=8.3",
+    "ruff>=0.11",
+]
+
+[tool.setuptools]
+py-modules = ["app", "send_weekly"]
+
+[tool.pytest.ini_options]
+addopts = "-ra"
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 120
+extend-exclude = ["PLAN.md"]
+
+[tool.ruff.lint]
+select = ["E4", "E9", "F"]
+
+[tool.mypy]
+python_version = "3.12"
+files = ["app.py", "send_weekly.py", "tests"]
+check_untyped_defs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+no_implicit_optional = true
+

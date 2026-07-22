@@ -1,0 +1,19 @@
+.env
+*.db
+*.sqlite
+*.sqlite3
+credentials.json
+token.json
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+dist/
+build/
+*.spec
+*.egg-info/
+
+# The bundled calendar may contain personal academic information.
+open_university_calendar.ics
