@@ -1,0 +1,16 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+BEGIN:VEVENT
+UID:broken-date@example.edu
+DTSTART;VALUE=DATE:20271399
+SUMMARY;LANGUAGE=he:מועד אחרון להגשת ממ"ן
+THIS PROPERTY HAS NO COLON
+DESCRIPTION;LANGUAGE=he:קורס מבוא למערכות מידע (12345) בסמסטר א2027 מטלה 99
+END:VEVENT
+BEGIN:VEVENT
+UID:valid-after-broken@example.edu
+DTSTART;VALUE=DATE:20270815
+SUMMARY;LANGUAGE=he:מועד אחרון להגשת ממ"ן
+DESCRIPTION;LANGUAGE=he:קורס מבוא למערכות מידע (12345) בסמסטר א2027 מטלה 01
+END:VEVENT
+END:VCALENDAR

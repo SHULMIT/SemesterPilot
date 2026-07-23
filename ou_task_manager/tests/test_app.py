@@ -7,6 +7,8 @@ from unittest.mock import MagicMock
 import pytest
 
 import app
+from semester_pilot.infrastructure.database import SQLiteDatabase
+from semester_pilot.infrastructure.repositories import SQLiteAssignmentRepository
 
 
 def test_init_db_creates_expected_schema(isolated_app: Path) -> None:
@@ -22,6 +24,11 @@ def test_seed_data_is_idempotent(isolated_app: Path) -> None:
     with app.db() as connection:
         assert connection.execute("SELECT COUNT(*) FROM courses").fetchone()[0] == 3
         assert connection.execute("SELECT COUNT(*) FROM assignments").fetchone()[0] == 15
+        assert connection.execute("SELECT COUNT(*) FROM assignments WHERE due_at IS NULL").fetchone()[0] == 0
+        assert connection.execute("SELECT COUNT(*) FROM assignments WHERE title = ''").fetchone()[0] == 0
+
+    repository = SQLiteAssignmentRepository(SQLiteDatabase(isolated_app))
+    assert len(repository.list_active()) == 15
 
 
 def test_assignment_notes_completion_and_settings_persist(isolated_app: Path) -> None:

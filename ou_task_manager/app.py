@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import html
-import re
 import sqlite3
 import smtplib
+import sys
 import threading
 import webbrowser
+from contextlib import AbstractContextManager
 from datetime import date, datetime
 from email.message import EmailMessage
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -13,6 +14,14 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 BASE_DIR = Path(__file__).resolve().parent
+SOURCE_DIR = BASE_DIR / "src"
+if str(SOURCE_DIR) not in sys.path:
+    sys.path.insert(0, str(SOURCE_DIR))
+
+from semester_pilot.infrastructure.database import SQLiteDatabase
+from semester_pilot.infrastructure.calendar_import import create_open_university_import_service
+from semester_pilot.infrastructure.migrations import SQLiteMigrator
+
 DB_PATH = BASE_DIR / "tasks.db"
 ENV_PATH = BASE_DIR / ".env"
 HOST, PORT = "127.0.0.1", 5000
@@ -29,47 +38,43 @@ def load_env() -> dict[str, str]:
     return values
 
 
-def db() -> sqlite3.Connection:
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    return conn
+def db() -> AbstractContextManager[sqlite3.Connection]:
+    return SQLiteDatabase(DB_PATH).connection()
 
 
 def init_db() -> None:
-    with db() as conn:
-        conn.executescript("""
-        CREATE TABLE IF NOT EXISTS courses (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            code TEXT NOT NULL UNIQUE,
-            name TEXT NOT NULL
-        );
-        CREATE TABLE IF NOT EXISTS assignments (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            course_id INTEGER NOT NULL,
-            number TEXT NOT NULL,
-            due_date TEXT NOT NULL,
-            completed INTEGER NOT NULL DEFAULT 0,
-            notes TEXT NOT NULL DEFAULT '',
-            UNIQUE(course_id, number, due_date),
-            FOREIGN KEY(course_id) REFERENCES courses(id)
-        );
-        CREATE TABLE IF NOT EXISTS settings (
-            key TEXT PRIMARY KEY,
-            value TEXT NOT NULL
-        );
-        """)
+    SQLiteMigrator(SQLiteDatabase(DB_PATH)).migrate()
 
 
 def upsert_course(conn: sqlite3.Connection, code: str, name: str) -> int:
     conn.execute(
-        "INSERT INTO courses(code,name) VALUES(?,?) ON CONFLICT(code) DO UPDATE SET name=excluded.name", (code, name)
+        """
+        INSERT INTO courses(source_id, institution, semester, code, name)
+        VALUES('legacy', '', '', ?, ?)
+        ON CONFLICT(source_id, institution, code, semester)
+        DO UPDATE SET name = excluded.name
+        """,
+        (code, name),
     )
-    return int(conn.execute("SELECT id FROM courses WHERE code=?", (code,)).fetchone()["id"])
+    return int(
+        conn.execute(
+            """
+            SELECT id FROM courses
+            WHERE source_id = 'legacy' AND institution = '' AND semester = '' AND code = ?
+            """,
+            (code,),
+        ).fetchone()["id"]
+    )
 
 
 def add_assignment(conn: sqlite3.Connection, course_id: int, number: str, due_date: str) -> None:
     conn.execute(
-        "INSERT OR IGNORE INTO assignments(course_id,number,due_date) VALUES(?,?,?)", (course_id, number, due_date)
+        """
+        INSERT OR IGNORE INTO assignments(
+            course_id, number, due_date, title, due_at, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        """,
+        (course_id, number, due_date, f"Assignment {number}", f"{due_date}T23:59:59"),
     )
 
 
@@ -148,21 +153,17 @@ def weekly_tasks() -> list[dict]:
 
 
 def parse_ics(text: str) -> list[tuple[str, str, str, str]]:
-    found = []
-    for block in text.split("BEGIN:VEVENT")[1:]:
-        if 'מועד אחרון להגשת ממ"ן' not in block and "מועד אחרון להגשת ממ" not in block:
-            continue
-        desc_match = re.search(r"DESCRIPTION[^:]*:(.*)", block)
-        date_match = re.search(r"DTSTART[^:]*:(\d{8})", block)
-        if not desc_match or not date_match:
-            continue
-        desc = desc_match.group(1)
-        m = re.search(r"קורס\s+(.+?)\s*\((\d+)\).*?מטלה\s+(\d+)", desc)
-        if m:
-            name, code, number = m.groups()
-            raw = date_match.group(1)
-            found.append((code, name.strip(), number.zfill(2), f"{raw[:4]}-{raw[4:6]}-{raw[6:8]}"))
-    return found
+    preview = create_open_university_import_service().preview(text)
+    return [
+        (
+            assignment.course.code,
+            assignment.course.name,
+            assignment.number,
+            assignment.due_at.date().isoformat(),
+        )
+        for assignment in preview.assignments
+        if assignment.course is not None
+    ]
 
 
 def import_default_ics() -> int:
@@ -273,7 +274,23 @@ class Handler(BaseHTTPRequestHandler):
         try:
             if p == "/toggle":
                 with db() as conn:
-                    conn.execute("UPDATE assignments SET completed=1-completed WHERE id=?", (int(f["id"]),))
+                    conn.execute(
+                        """
+                        UPDATE assignments
+                        SET completed = 1 - completed,
+                            status = CASE
+                                WHEN completed = 0 THEN 'WORK_COMPLETED'
+                                ELSE 'NOT_STARTED'
+                            END,
+                            completed_at = CASE
+                                WHEN completed = 0 THEN CURRENT_TIMESTAMP
+                                ELSE NULL
+                            END,
+                            updated_at = CURRENT_TIMESTAMP
+                        WHERE id = ?
+                        """,
+                        (int(f["id"]),),
+                    )
                 self.redirect()
                 return
             if p == "/notes":

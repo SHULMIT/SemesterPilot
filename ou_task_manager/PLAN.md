@@ -789,6 +789,14 @@ Each user downloads and runs the application on their own computer. The applicat
 
 The application must not require a central server for its core features.
 
+1.1 Product Visual Direction
+
+SemesterPilot should feel modern, calm, motivating, student-friendly, pleasant for long study sessions, professional but not corporate, and visually impressive without being overloaded.
+
+The Open University of Israel may be used only as visual inspiration: academic blue, turquoise, white and calm neutral surfaces, a familiar academic atmosphere, and Hebrew-first terminology. Do not directly copy the university website, logo, layouts, copyrighted visual assets, or branding. SemesterPilot should feel familiar to Open University students while maintaining an independent visual identity.
+
+Avoid a generic Bootstrap-style appearance, dense enterprise tables, excessive gradients, excessive animations, tiny text, too many colors, childish visual design, and hard-coded styling inside screens.
+
 2. Primary Goals
    Import an academic .ics calendar.
    Detect and classify courses, assignments, lessons, exams, semester dates, and other academic events.
@@ -951,6 +959,46 @@ Import history
 About and diagnostics
 
 Use a view-model or presenter approach so that UI widgets do not contain business logic.
+
+Required UI package structure:
+
+ui/
+theme/
+components/
+screens/
+view_models/
+navigation/
+shared/
+
+For non-trivial screens, prefer a three-file structure:
+
+screen_view.py
+screen_view_model.py
+screen_state.py
+
+Responsibilities:
+
+View: Render prepared state and forward user interactions. It must not contain domain business rules.
+ViewModel or Presenter: Prepare display state and invoke application use cases. It must be testable with fake services.
+Application service: Coordinate business workflows and rules.
+Repository: Define a persistence abstraction.
+Infrastructure implementation: Integrate SQLite, email, notifications, scheduling, credentials, and file access.
+
+The UI layer must never execute SQL, access SQLite directly, parse ICS files, calculate priorities, generate weekly plans, send email, schedule reminders, or contain domain business rules.
+
+5.6 Dependency and SOLID Rules
+
+The required architectural layers are:
+
+Domain
+Application / Services
+Repository abstractions
+Infrastructure
+UI
+
+Use one clear responsibility per class and keep classes small and focused. Prefer composition over deep inheritance. Inject external dependencies. Business logic must be testable without launching the UI. ViewModels must be testable with fake services. Do not use global mutable state, god classes, or a MainWindow that manages the entire application. Do not introduce speculative abstractions without a real reason.
+
+Create an interface only when multiple implementations exist, a second implementation is planned soon, the dependency is external, or tests need a replaceable implementation. Useful abstractions include AssignmentRepository, CalendarParser, NotificationSender, EmailSender, and CredentialStore. Do not create an interface for every class.
 
 6. Core Data Model
    6.1 Course
@@ -1532,6 +1580,10 @@ Consider code signing only after the project becomes stable. 25. Milestones
 
 Codex must implement one milestone at a time. Do not implement the entire plan in one task.
 
+Stopping rule for every milestone: stop as soon as that milestone's listed deliverables and acceptance criteria are satisfied. Do not begin the next milestone in the same task. Any explicit approval gate must be satisfied in a later user turn before dependent work begins.
+
+Stopping rule for every milestone: stop as soon as that milestone's listed deliverables and acceptance criteria are satisfied. Do not begin the next milestone in the same task. Any explicit approval gate must be satisfied in a later user turn before dependent work begins.
+
 Milestone 0 — Repository Audit and Foundation
 
 Deliverables:
@@ -1605,7 +1657,50 @@ Reimporting the same file creates no duplicates.
 Changed deadlines update correctly.
 Notes, status, and subtasks remain unchanged.
 Missing events are flagged rather than deleted.
-Milestone 4 — First-Run and Import UI
+
+Stopping point:
+
+Stop after the transactional synchronization service, persistence schema,
+history, and automated verification are complete. Do not begin UI,
+notifications, planning, email, or later milestones without approval.
+Milestone 4 — Design System and UI Foundation
+
+Deliverables:
+
+Complete visual design system
+Centralized color tokens
+Typography tokens
+Spacing and sizing tokens
+Border-radius and elevation tokens
+Light and dark themes
+Hebrew-first RTL support
+Reusable UI components
+Navigation structure
+Screen map
+UI architecture documentation
+Fake or in-memory prototype data only
+Welcome screen prototype
+Dashboard prototype
+Assignment card
+Course card
+Status badge
+Progress component
+Empty, loading, success, and error states
+
+Acceptance criteria:
+
+The prototype demonstrates the approved visual direction in light and dark themes.
+Hebrew RTL layout, navigation, screen hierarchy, reusable components, and all required states are reviewable.
+Styling is centralized in tokens and reusable components rather than hard-coded inside screens.
+Prototype screens use only fake or in-memory data and do not connect to SQLite, repositories, or real application services.
+UI architecture and View/ViewModel/State responsibilities are documented.
+No full product UI implementation begins until the repository owner explicitly approves the prototype and design system.
+
+Stopping point:
+
+Stop after presenting the isolated prototype and documentation for approval. Do not connect it to persistence or application services and do not begin the full UI.
+
+Milestone 5 — First-Run and Import UI
 
 Deliverables:
 
@@ -1621,7 +1716,7 @@ Acceptance criteria:
 A non-technical user can import a calendar without using the terminal.
 Errors are understandable.
 No database details are exposed to the user.
-Milestone 5 — Dashboard and Assignment Management
+Milestone 6 — Dashboard and Assignment Management
 
 Deliverables:
 
@@ -1639,7 +1734,7 @@ Acceptance criteria:
 The dashboard clearly shows what needs attention.
 Changes persist.
 Completed and submitted are separate states.
-Milestone 6 — Subtasks and Planning
+Milestone 7 — Subtasks and Planning
 
 Deliverables:
 
@@ -1655,7 +1750,7 @@ Acceptance criteria:
 Plans respect deadlines and availability.
 Large tasks can be split over multiple days.
 Users can lock manual changes before regeneration.
-Milestone 7 — Local Notifications and Scheduler
+Milestone 8 — Local Notifications and Scheduler
 
 Deliverables:
 
@@ -1672,7 +1767,7 @@ Notifications do not duplicate excessively.
 Completed assignments are excluded.
 Settings are respected.
 Scheduling survives application restart.
-Milestone 8 — Optional Email
+Milestone 9 — Optional Email
 
 Deliverables:
 
@@ -1689,7 +1784,7 @@ Core app works without email.
 Credentials are not stored in plain text.
 No developer email credentials are used.
 Sending failures are visible and recoverable.
-Milestone 9 — Calendar View, Backup, and Export
+Milestone 10 — Calendar View, Backup, and Export
 
 Deliverables:
 
@@ -1705,7 +1800,7 @@ Acceptance criteria:
 Restore creates a safety backup first.
 Exported data matches current database state.
 Calendar categories can be toggled.
-Milestone 10 — Packaging and Release
+Milestone 11 — Packaging and Release
 
 Deliverables:
 
@@ -1840,6 +1935,14 @@ Each user downloads and runs the application on their own computer. The applicat
 
 The application must not require a central server for its core features.
 
+1.1 Product Visual Direction
+
+SemesterPilot should feel modern, calm, motivating, student-friendly, pleasant for long study sessions, professional but not corporate, and visually impressive without being overloaded.
+
+The Open University of Israel may be used only as visual inspiration: academic blue, turquoise, white and calm neutral surfaces, a familiar academic atmosphere, and Hebrew-first terminology. Do not directly copy the university website, logo, layouts, copyrighted visual assets, or branding. SemesterPilot should feel familiar to Open University students while maintaining an independent visual identity.
+
+Avoid a generic Bootstrap-style appearance, dense enterprise tables, excessive gradients, excessive animations, tiny text, too many colors, childish visual design, and hard-coded styling inside screens.
+
 2. Primary Goals
    Import an academic .ics calendar.
    Detect and classify courses, assignments, lessons, exams, semester dates, and other academic events.
@@ -2002,6 +2105,46 @@ Import history
 About and diagnostics
 
 Use a view-model or presenter approach so that UI widgets do not contain business logic.
+
+Required UI package structure:
+
+ui/
+theme/
+components/
+screens/
+view_models/
+navigation/
+shared/
+
+For non-trivial screens, prefer a three-file structure:
+
+screen_view.py
+screen_view_model.py
+screen_state.py
+
+Responsibilities:
+
+View: Render prepared state and forward user interactions. It must not contain domain business rules.
+ViewModel or Presenter: Prepare display state and invoke application use cases. It must be testable with fake services.
+Application service: Coordinate business workflows and rules.
+Repository: Define a persistence abstraction.
+Infrastructure implementation: Integrate SQLite, email, notifications, scheduling, credentials, and file access.
+
+The UI layer must never execute SQL, access SQLite directly, parse ICS files, calculate priorities, generate weekly plans, send email, schedule reminders, or contain domain business rules.
+
+5.6 Dependency and SOLID Rules
+
+The required architectural layers are:
+
+Domain
+Application / Services
+Repository abstractions
+Infrastructure
+UI
+
+Use one clear responsibility per class and keep classes small and focused. Prefer composition over deep inheritance. Inject external dependencies. Business logic must be testable without launching the UI. ViewModels must be testable with fake services. Do not use global mutable state, god classes, or a MainWindow that manages the entire application. Do not introduce speculative abstractions without a real reason.
+
+Create an interface only when multiple implementations exist, a second implementation is planned soon, the dependency is external, or tests need a replaceable implementation. Useful abstractions include AssignmentRepository, CalendarParser, NotificationSender, EmailSender, and CredentialStore. Do not create an interface for every class.
 
 6. Core Data Model
    6.1 Course
@@ -2656,7 +2799,44 @@ Reimporting the same file creates no duplicates.
 Changed deadlines update correctly.
 Notes, status, and subtasks remain unchanged.
 Missing events are flagged rather than deleted.
-Milestone 4 — First-Run and Import UI
+Milestone 4 — Design System and UI Foundation
+
+Deliverables:
+
+Complete visual design system
+Centralized color tokens
+Typography tokens
+Spacing and sizing tokens
+Border-radius and elevation tokens
+Light and dark themes
+Hebrew-first RTL support
+Reusable UI components
+Navigation structure
+Screen map
+UI architecture documentation
+Fake or in-memory prototype data only
+Welcome screen prototype
+Dashboard prototype
+Assignment card
+Course card
+Status badge
+Progress component
+Empty, loading, success, and error states
+
+Acceptance criteria:
+
+The prototype demonstrates the approved visual direction in light and dark themes.
+Hebrew RTL layout, navigation, screen hierarchy, reusable components, and all required states are reviewable.
+Styling is centralized in tokens and reusable components rather than hard-coded inside screens.
+Prototype screens use only fake or in-memory data and do not connect to SQLite, repositories, or real application services.
+UI architecture and View/ViewModel/State responsibilities are documented.
+No full product UI implementation begins until the repository owner explicitly approves the prototype and design system.
+
+Stopping point:
+
+Stop after presenting the isolated prototype and documentation for approval. Do not connect it to persistence or application services and do not begin the full UI.
+
+Milestone 5 — First-Run and Import UI
 
 Deliverables:
 
@@ -2672,7 +2852,7 @@ Acceptance criteria:
 A non-technical user can import a calendar without using the terminal.
 Errors are understandable.
 No database details are exposed to the user.
-Milestone 5 — Dashboard and Assignment Management
+Milestone 6 — Dashboard and Assignment Management
 
 Deliverables:
 
@@ -2690,7 +2870,7 @@ Acceptance criteria:
 The dashboard clearly shows what needs attention.
 Changes persist.
 Completed and submitted are separate states.
-Milestone 6 — Subtasks and Planning
+Milestone 7 — Subtasks and Planning
 
 Deliverables:
 
@@ -2706,7 +2886,7 @@ Acceptance criteria:
 Plans respect deadlines and availability.
 Large tasks can be split over multiple days.
 Users can lock manual changes before regeneration.
-Milestone 7 — Local Notifications and Scheduler
+Milestone 8 — Local Notifications and Scheduler
 
 Deliverables:
 
@@ -2723,7 +2903,7 @@ Notifications do not duplicate excessively.
 Completed assignments are excluded.
 Settings are respected.
 Scheduling survives application restart.
-Milestone 8 — Optional Email
+Milestone 9 — Optional Email
 
 Deliverables:
 
@@ -2740,7 +2920,7 @@ Core app works without email.
 Credentials are not stored in plain text.
 No developer email credentials are used.
 Sending failures are visible and recoverable.
-Milestone 9 — Calendar View, Backup, and Export
+Milestone 10 — Calendar View, Backup, and Export
 
 Deliverables:
 
@@ -2756,7 +2936,7 @@ Acceptance criteria:
 Restore creates a safety backup first.
 Exported data matches current database state.
 Calendar categories can be toggled.
-Milestone 10 — Packaging and Release
+Milestone 11 — Packaging and Release
 
 Deliverables:
 

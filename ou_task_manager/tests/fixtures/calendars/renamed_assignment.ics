@@ -1,0 +1,9 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+BEGIN:VEVENT
+UID:assignment-01@example.edu
+DTSTART;VALUE=DATE:20270815
+SUMMARY;LANGUAGE=he:מטלה 01 — תרגיל מסכם חדש
+DESCRIPTION;LANGUAGE=he:קורס מבוא למערכות מידע (12345) בסמסטר א2027 מטלה 01
+END:VEVENT
+END:VCALENDAR

@@ -1,0 +1,32 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//SemesterPilot Test University//HE
+BEGIN:VEVENT
+UID:assignment-01@example.edu
+DTSTART;VALUE=DATE:20270815
+DTEND;VALUE=DATE:20270816
+SUMMARY;LANGUAGE=he:מועד אחרון להגשת ממ"ן
+DESCRIPTION;LANGUAGE=he:קורס מבוא למערכות מידע (12345) בסמסטר א2027 מטלה 01
+LOCATION:
+END:VEVENT
+BEGIN:VEVENT
+UID:lesson-01@example.edu
+DTSTART;TZID=Asia/Jerusalem:20270801T180000
+DTEND;TZID=Asia/Jerusalem:20270801T200000
+SUMMARY;LANGUAGE=he:מפגש בהנחיה מקוונת
+DESCRIPTION;LANGUAGE=he:מבוא למערכות מידע (12345) בסמסטר א2027
+LOCATION;LANGUAGE=he:כיתה מקוונת
+END:VEVENT
+BEGIN:VEVENT
+UID:exam-registration@example.edu
+DTSTART:20270820T090000Z
+SUMMARY;LANGUAGE=he:הרשמה לבחינת גמר
+DESCRIPTION;LANGUAGE=he:קורס מבוא למערכות מידע (12345) בסמסטר א2027
+END:VEVENT
+BEGIN:VEVENT
+UID:unknown-01@example.edu
+DTSTART;VALUE=DATE:20270825
+SUMMARY;LANGUAGE=he:אירוע קמפוס מיוחד
+DESCRIPTION;LANGUAGE=he:מידע כללי לסטודנטים
+END:VEVENT
+END:VCALENDAR
